@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:sustainable_living/admin/admin.dart';
+import 'package:sustainable_living/home/calculaotor.dart';
+import 'package:sustainable_living/home/home.dart';
 import 'package:sustainable_living/login.dart';
 import 'package:sustainable_living/selection.dart';
 import 'package:sustainable_living/signup.dart';
@@ -24,6 +27,9 @@ class MainApp extends StatelessWidget {
         '/Selection': (context) => const SelectionScreen(),
         '/Login': (context) => const LoginScreen(),
         '/Signup': (context) => const SignUpScreen(),
+        '/AdminDashboard': (context) => const AdminDashboard(),
+        '/Home': (context) => const HomePage(),
+        '/tracker': (context) => const CarbonCalculatorScreen(),
       },
     );
   }

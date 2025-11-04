@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quickalert/quickalert.dart';
@@ -15,12 +16,57 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _rememberMe = false;
+  @override
+  void initState() {
+    super.initState();
+    _checkUser();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      String uid = user.uid;
+
+      try {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .get();
+
+        if (userDoc.exists) {
+          final data = userDoc.data() as Map<String, dynamic>;
+          final status = data['role'];
+          if (status == 'admin') {
+            Navigator.pushReplacementNamed(context, '/AdminDashboard');
+          } else {
+            Navigator.pushReplacementNamed(context, '/Home');
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No user data found!'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        // Handle any errors that might occur during the fetch
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error fetching user data: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _login() async {
@@ -31,51 +77,49 @@ class _LoginScreenState extends State<LoginScreen> {
           .signInWithEmailAndPassword(email: email, password: password)
           .then((UserCredential userCredential) {
             String uid = userCredential.user!.uid;
-            // get data from database which matches the uid in users collection
 
-            // FirebaseFirestore.instance.collection('users').doc(uid).get().then((
-            //   DocumentSnapshot userDoc,
-            // ) {
-            //   if (userDoc.exists) {
-            //     final data = userDoc.data() as Map<String, dynamic>;
-            //     final status = data['Status'];
-            //     if (status == 'Student') {
-            //       Navigator.pushReplacement(
-            //         context,
-            //         MaterialPageRoute(
-            //           builder: (_) => SplashScreen(nextPage: HomePage()),
-            //         ),
-            //       );
-            //     } else if (status == 'Admin') {
-            //       Navigator.pushReplacement(
-            //         context,
-            //         MaterialPageRoute(
-            //           builder: (_) => SplashScreen(nextPage: AdminDashboard()),
-            //         ),
-            //       );
-            //     } else {
-            //       Navigator.pushReplacement(
-            //         context,
-            //         MaterialPageRoute(
-            //           builder: (_) => SplashScreen(nextPage: Organizer()),
-            //         ),
-            //       );
-            //     }
-            //   } else {
-            //     ScaffoldMessenger.of(context).showSnackBar(
-            //       const SnackBar(
-            //         content: Text('No user data found!'),
-            //         backgroundColor: Colors.red,
-            //       ),
-            //     );
-            //   }
+            FirebaseFirestore.instance
+                .collection('users')
+                .doc(uid)
+                .get()
+                .then((DocumentSnapshot userDoc) {
+                  if (userDoc.exists) {
+                    final data = userDoc.data() as Map<String, dynamic>;
+                    final status = data['role'];
+                    if (status == 'admin') {
+                      Navigator.pushReplacementNamed(
+                        context,
+                        '/AdminDashboard',
+                      );
+                    } else {
+                      Navigator.pushReplacementNamed(context, '/Home');
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('No user data found!'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
 
-            if (!mounted) return;
-            QuickAlert.show(
-              context: context,
-              type: QuickAlertType.success,
-              text: 'Login Successful!',
-            );
+                  if (!mounted) return;
+                  QuickAlert.show(
+                    context: context,
+                    type: QuickAlertType.success,
+                    text: 'Login Successful!',
+                  );
+                })
+                .catchError((error) {
+                  // Login failed
+                  if (!mounted) return;
+                  QuickAlert.show(
+                    context: context,
+                    type: QuickAlertType.error,
+                    title: 'Oops...',
+                    text: 'Sorry, something went wrong : $error',
+                  );
+                });
           })
           .catchError((error) {
             // Login failed
