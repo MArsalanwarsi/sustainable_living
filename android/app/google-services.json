@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "578106824463",
+    "project_id": "sustainable-living-e1c0a",
+    "storage_bucket": "sustainable-living-e1c0a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:578106824463:android:f05860ec7cba467192907a",
+        "android_client_info": {
+          "package_name": "com.example.sustainable_living"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCj1Z5BgPM69jUK3lKjDGVX4_6NaUFEM_s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
