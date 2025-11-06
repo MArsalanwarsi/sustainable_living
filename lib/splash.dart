@@ -13,7 +13,8 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     // Delay for 5 seconds then navigate
     Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacementNamed(context, '/Selection');
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed('/Selection');
     });
   }
 

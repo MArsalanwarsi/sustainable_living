@@ -4,6 +4,7 @@ PreferredSizeWidget buildCustomAppBar(BuildContext context) {
   return AppBar(
     backgroundColor: Colors.transparent,
     elevation: 0,
+    automaticallyImplyLeading: false,
     centerTitle: true,
     title: Image.asset('assets/name.png', height: 58, fit: BoxFit.contain),
     actions: [
@@ -16,9 +17,7 @@ PreferredSizeWidget buildCustomAppBar(BuildContext context) {
             size: 26,
           ),
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Profile navigation in future')),
-            );
+            Navigator.pushReplacementNamed(context, '/Profile');
           },
         ),
       ),
@@ -27,7 +26,7 @@ PreferredSizeWidget buildCustomAppBar(BuildContext context) {
 }
 
 /// Custom Bottom Navigation Bar
-Widget buildCustomBottomBar(context,int currentIndex) {
+Widget buildCustomBottomBar(context, int currentIndex) {
   return Container(
     decoration: BoxDecoration(
       color: Colors.white,
@@ -47,10 +46,16 @@ Widget buildCustomBottomBar(context,int currentIndex) {
       type: BottomNavigationBarType.fixed,
       backgroundColor: Colors.transparent,
       elevation: 0,
-      currentIndex: currentIndex,
+      showSelectedLabels: true,
+      showUnselectedLabels: true,
+      selectedFontSize: 12,
+      unselectedFontSize: 12,
+      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
+      currentIndex: (currentIndex >= 0 && currentIndex < 5) ? currentIndex : -1,
       selectedItemColor: Colors.green.shade700,
       unselectedItemColor: Colors.grey,
-        onTap: (int index) {
+      onTap: (int index) {
         if (index == currentIndex) return;
         // Define your route names according to your app's navigation
         final routes = [

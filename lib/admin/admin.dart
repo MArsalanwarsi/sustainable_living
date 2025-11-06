@@ -107,7 +107,6 @@ class _StatCard extends StatelessWidget {
     required this.title,
     required this.value,
     required this.icon,
-    super.key,
   });
 
   @override

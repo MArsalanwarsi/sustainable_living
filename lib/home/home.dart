@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
             profile = data['profile_image'];
             setState(() {});
           }
-        } 
+        }
       } catch (e) {
         // Handle any errors that might occur during the fetch
         ScaffoldMessenger.of(context).showSnackBar(
@@ -207,15 +207,15 @@ class _HomePageState extends State<HomePage> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    buildNewsCard(
-                      "Community Solar Initiatives",
-                      "assets/solar.jpg",
-                    ),
-                    buildNewsCard("Eco Coffee Cups", "assets/cup.jpg"),
-                    buildNewsCard(
-                      "Green Transport Ideas",
-                      "assets/transport.jpg",
-                    ),
+                    // buildNewsCard(
+                    //   "Community Solar Initiatives",
+                    //   "assets/solar.jpg",
+                    // ),
+                    // buildNewsCard("Eco Coffee Cups", "assets/cup.jpg"),
+                    // buildNewsCard(
+                    //   "Green Transport Ideas",
+                    //   "assets/transport.jpg",
+                    // ),
                   ],
                 ),
               ),
