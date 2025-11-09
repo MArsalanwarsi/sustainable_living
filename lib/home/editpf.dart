@@ -55,24 +55,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         if (userDoc.exists) {
           final data = userDoc.data() as Map<String, dynamic>;
-          role = data['role'];
+          name = data['name'];
+          // Use the email from FirebaseAuth as it's the source of truth for auth
+          email = user?.email;
+          profile = data['profile_image'];
 
-          if (role == 'admin') {
-            // Redirect admin users
-            Navigator.pushReplacementNamed(context, '/AdminDashboard');
-          } else {
-            name = data['name'];
-            // Use the email from FirebaseAuth as it's the source of truth for auth
-            email = user?.email;
-            profile = data['profile_image'];
-
-            // Initialize controllers with fetched data
-            _nameController.text = name ?? '';
-            _emailController.text = email ?? '';
-
-            print("profile data $profile");
-            setState(() {});
-          }
+          // Initialize controllers with fetched data
+          _nameController.text = name ?? '';
+          _emailController.text = email ?? '';
+          setState(() {});
         }
       } catch (e) {
         // Handle any errors that might occur during the fetch
@@ -135,7 +126,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (profile != null && !profile!.startsWith('http')) {
         // Show loading indicator or disable button here in a real app
 
-
         // Await the asynchronous upload operation
         finalProfileUrl = await uploadImageToCloudinary();
         imageUpdated = true;
@@ -153,16 +143,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       // Only update if the name or email has actually changed, or if the image was updated
       if (newName != name || newEmail != email || imageUpdated) {
-        FirebaseAuth.instance.currentUser?.verifyBeforeUpdateEmail(newEmail).catchError((error) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Email update failed: $error'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        });
+        FirebaseAuth.instance.currentUser
+            ?.verifyBeforeUpdateEmail(newEmail)
+            .catchError((error) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Email update failed: $error'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            });
         FirebaseFirestore.instance
             .collection('users')
             .doc(uid)
@@ -216,7 +208,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.green),
-          onPressed: () => Navigator.pushReplacementNamed(context, '/Profile'),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       backgroundColor: const Color(0xFFEAF4EA),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:sustainable_living/Custom/admincustomwidget.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -8,6 +9,8 @@ class AdminDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F8F5),
+      appBar: buildAdminCustomAppBar(context),
+      bottomNavigationBar: buildAdminCustomBottomBar(context, 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -22,13 +25,37 @@ class AdminDashboard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
-                Expanded(child: _StatCard(title: "Users", value: "1,245", icon: Icons.people)),
+                Expanded(
+                  child: _StatCard(
+                    title: "Users",
+                    value: "1,245",
+                    icon: Icons.people,
+                  ),
+                ),
                 SizedBox(width: 8),
-                Expanded(child: _StatCard(title: "Challenges", value: "32", icon: Icons.flag)),
+                Expanded(
+                  child: _StatCard(
+                    title: "Challenges",
+                    value: "32",
+                    icon: Icons.flag,
+                  ),
+                ),
                 SizedBox(width: 8),
-                Expanded(child: _StatCard(title: "Tips", value: "58", icon: Icons.lightbulb_outline)),
+                Expanded(
+                  child: _StatCard(
+                    title: "Tips",
+                    value: "58",
+                    icon: Icons.lightbulb_outline,
+                  ),
+                ),
                 SizedBox(width: 8),
-                Expanded(child: _StatCard(title: "Forum", value: "124", icon: Icons.forum)),
+                Expanded(
+                  child: _StatCard(
+                    title: "Forum",
+                    value: "124",
+                    icon: Icons.forum,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 24),
@@ -81,13 +108,27 @@ class AdminDashboard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
-                Expanded(child: _QuickButton(icon: Icons.flag, label: "Add Challenge")),
+                Expanded(
+                  child: _QuickButton(icon: Icons.flag, label: "Add Challenge"),
+                ),
                 SizedBox(width: 8),
-                Expanded(child: _QuickButton(icon: Icons.lightbulb_outline, label: "Add Tip")),
+                Expanded(
+                  child: _QuickButton(
+                    icon: Icons.lightbulb_outline,
+                    label: "Add Tip",
+                  ),
+                ),
                 SizedBox(width: 8),
-                Expanded(child: _QuickButton(icon: Icons.people, label: "Manage Users")),
+                Expanded(
+                  child: _QuickButton(
+                    icon: Icons.people,
+                    label: "Manage Users",
+                  ),
+                ),
                 SizedBox(width: 8),
-                Expanded(child: _QuickButton(icon: Icons.forum, label: "Forum")),
+                Expanded(
+                  child: _QuickButton(icon: Icons.forum, label: "Forum"),
+                ),
               ],
             ),
           ],
@@ -150,8 +191,10 @@ class _LineChartCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("CO₂ Saved Per Week",
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            "CO₂ Saved Per Week",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           Expanded(
             child: LineChart(
@@ -202,8 +245,10 @@ class _BarChartCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Challenges Joined Per Day",
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            "Challenges Joined Per Day",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           Expanded(
             child: BarChart(
@@ -212,18 +257,30 @@ class _BarChartCard extends StatelessWidget {
                 titlesData: FlTitlesData(show: false),
                 borderData: FlBorderData(show: false),
                 barGroups: [
-                  BarChartGroupData(x: 0, barRods: [
-                    BarChartRodData(toY: 2, color: Colors.green.shade400)
-                  ]),
-                  BarChartGroupData(x: 1, barRods: [
-                    BarChartRodData(toY: 3, color: Colors.green.shade400)
-                  ]),
-                  BarChartGroupData(x: 2, barRods: [
-                    BarChartRodData(toY: 4, color: Colors.green.shade400)
-                  ]),
-                  BarChartGroupData(x: 3, barRods: [
-                    BarChartRodData(toY: 5, color: Colors.green.shade400)
-                  ]),
+                  BarChartGroupData(
+                    x: 0,
+                    barRods: [
+                      BarChartRodData(toY: 2, color: Colors.green.shade400),
+                    ],
+                  ),
+                  BarChartGroupData(
+                    x: 1,
+                    barRods: [
+                      BarChartRodData(toY: 3, color: Colors.green.shade400),
+                    ],
+                  ),
+                  BarChartGroupData(
+                    x: 2,
+                    barRods: [
+                      BarChartRodData(toY: 4, color: Colors.green.shade400),
+                    ],
+                  ),
+                  BarChartGroupData(
+                    x: 3,
+                    barRods: [
+                      BarChartRodData(toY: 5, color: Colors.green.shade400),
+                    ],
+                  ),
                 ],
               ),
             ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-PreferredSizeWidget buildCustomAppBar(BuildContext context) {
+PreferredSizeWidget buildAdminCustomAppBar(BuildContext context) {
   return AppBar(
     backgroundColor: Colors.transparent,
     elevation: 0,
@@ -17,7 +17,7 @@ PreferredSizeWidget buildCustomAppBar(BuildContext context) {
             size: 26,
           ),
           onPressed: () {
-            Navigator.pushNamed(context, '/Profile');
+            Navigator.pushNamed(context, '/AdminProfile');
           },
         ),
       ),
@@ -26,7 +26,7 @@ PreferredSizeWidget buildCustomAppBar(BuildContext context) {
 }
 
 /// Custom Bottom Navigation Bar
-Widget buildCustomBottomBar(BuildContext context, int currentIndex) {
+Widget buildAdminCustomBottomBar(BuildContext context, int currentIndex) {
   return Container(
     decoration: BoxDecoration(
       color: Colors.white,
@@ -59,16 +59,15 @@ Widget buildCustomBottomBar(BuildContext context, int currentIndex) {
         if (index == currentIndex) return;
         // Define your route names according to your app's navigation
         final routes = [
-          '/Home',
-          '/tracker',
-          '/Challenges',
-          '/Products',
-          '/form',
+          '/AdminDashboard',
+          '/AdminTracker',
+          '/AdminChallenges',
+          '/AdminProducts',
+          '/AdminForm',
         ];
         Navigator.pushReplacementNamed(context, routes[index]);
       },
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
         BottomNavigationBarItem(
           icon: Icon(Icons.energy_savings_leaf_outlined),
           label: 'Tracker',

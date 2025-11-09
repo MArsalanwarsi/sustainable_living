@@ -70,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.green),
-          onPressed: () => Navigator.pushReplacementNamed(context, '/Home'),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       bottomNavigationBar: buildCustomBottomBar(context, 0),
@@ -204,7 +204,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Centered Buttons
               GestureDetector(
                 onTap: () {
-                  Navigator.pushReplacementNamed(context, '/EditProfile');
+                  Navigator.pushNamed(context, '/EditProfile');
                 },
                 child: Container(
                   width: double.infinity,
@@ -229,6 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 15),
               GestureDetector(
                 onTap: () {
+                  FirebaseAuth.instance.signOut();
                   Navigator.pushReplacementNamed(context, '/Selection');
                 },
                 child: Container(

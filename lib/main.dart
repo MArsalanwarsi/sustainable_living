@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sustainable_living/admin/admin.dart';
+import 'package:sustainable_living/admin/adminprofile.dart';
+import 'package:sustainable_living/admin/crud.dart';
+import 'package:sustainable_living/home/mainchallanges.dart';
+import 'package:sustainable_living/home/tracker.dart';
 import 'package:sustainable_living/home/calculaotor.dart';
 import 'package:sustainable_living/home/editpf.dart';
 import 'package:sustainable_living/home/home.dart';
@@ -31,9 +35,13 @@ class MainApp extends StatelessWidget {
         '/Signup': (context) => const SignUpScreen(),
         '/AdminDashboard': (context) => const AdminDashboard(),
         '/Home': (context) => const HomePage(),
-        '/tracker': (context) => const CarbonCalculatorScreen(),
+        '/tracker': (context) => const TrackerHome(),
+        '/calculator': (context) => const CarbonCalculatorScreen(),
         '/Profile': (context) => const ProfileScreen(),
         '/EditProfile': (context) => const EditProfileScreen(),
+        '/Challenges': (context) => const EcoChallengesPage(),
+        '/AdminProducts': (context) => const ManageEcoProductsScreen(),
+        '/AdminProfile': (context) => const AdminProfileScreen(),
       },
     );
   }
