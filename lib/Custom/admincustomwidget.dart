@@ -60,7 +60,6 @@ Widget buildAdminCustomBottomBar(BuildContext context, int currentIndex) {
         // Define your route names according to your app's navigation
         final routes = [
           '/AdminDashboard',
-          '/AdminTracker',
           '/AdminChallenges',
           '/AdminProducts',
           '/AdminForm',
@@ -69,8 +68,8 @@ Widget buildAdminCustomBottomBar(BuildContext context, int currentIndex) {
       },
       items: const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.energy_savings_leaf_outlined),
-          label: 'Tracker',
+          icon: Icon(Icons.home_outlined),
+          label: 'Dashboard',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.flag_outlined),

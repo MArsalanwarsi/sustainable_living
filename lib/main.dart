@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sustainable_living/admin/admin.dart';
 import 'package:sustainable_living/admin/adminprofile.dart';
-import 'package:sustainable_living/admin/crud.dart';
+import 'package:sustainable_living/admin/ecoproducts.dart';
+import 'package:sustainable_living/home/buynow.dart';
+import 'package:sustainable_living/home/detailpage.dart';
 import 'package:sustainable_living/home/mainchallanges.dart';
+import 'package:sustainable_living/home/products.dart';
 import 'package:sustainable_living/home/tracker.dart';
 import 'package:sustainable_living/home/calculaotor.dart';
 import 'package:sustainable_living/home/editpf.dart';
 import 'package:sustainable_living/home/home.dart';
 import 'package:sustainable_living/home/profile.dart';
+import 'package:sustainable_living/home/whishlist.dart';
 import 'package:sustainable_living/login.dart';
 import 'package:sustainable_living/selection.dart';
 import 'package:sustainable_living/signup.dart';
@@ -42,6 +46,10 @@ class MainApp extends StatelessWidget {
         '/Challenges': (context) => const EcoChallengesPage(),
         '/AdminProducts': (context) => const ManageEcoProductsScreen(),
         '/AdminProfile': (context) => const AdminProfileScreen(),
+        '/Products': (context) => const EcoProducts(),
+        '/ProductsDetails': (context) => const ProductDetailPage(),
+        '/BuyNow': (context) => const BuyScreen(),
+        '/Wishlist': (context) => const WishlistScreen(),
       },
     );
   }
