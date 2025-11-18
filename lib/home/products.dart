@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:sustainable_living/Custom/customwidget.dart';
 
@@ -6,6 +7,7 @@ class Product {
   final String id;
   final String name;
   final double price;
+  final double greenPoints;
   final double co2Saved;
   final String imageUrl;
   final String description;
@@ -14,6 +16,7 @@ class Product {
     required this.id,
     required this.name,
     required this.price,
+    required this.greenPoints,
     required this.co2Saved,
     required this.imageUrl,
     required this.description,
@@ -22,57 +25,31 @@ class Product {
 
 // 🌿 Mock Product Service
 class ProductService {
-  static List<Product> getMockProducts() {
-    return [
-      Product(
-        id: '1',
-        name: 'Bamboo Water Bottle',
-        price: 24.99,
-        co2Saved: 12.5,
-        imageUrl: 'assets/cup.jpg',
-        description: 'Avoid plastic daily',
-      ),
-      Product(
-        id: '2',
-        name: 'Solar Garden Light',
-        price: 18.50,
-        co2Saved: 8.3,
-        imageUrl: 'assets/transport.jpg',
-        description: 'Harness clean energy',
-      ),
-      Product(
-        id: '3',
-        name: 'Organic Produce Bag',
-        price: 9.99,
-        co2Saved: 5.2,
-        imageUrl: 'assets/cup.jpg',
-        description: 'Reduce plastic waste',
-      ),
-      Product(
-        id: '4',
-        name: 'Electric Commuter Scooter',
-        price: 299.99,
-        co2Saved: 45.8,
-        imageUrl: 'assets/transport.jpg',
-        description: 'Eco-friendly travel',
-      ),
-      Product(
-        id: '5',
-        name: 'Reusable Coffee Cup',
-        price: 15.99,
-        co2Saved: 6.7,
-        imageUrl: 'assets/cup.jpg',
-        description: 'Say no to disposable cups',
-      ),
-      Product(
-        id: '6',
-        name: 'Biodegradable Phone Case',
-        price: 19.99,
-        co2Saved: 4.1,
-        imageUrl: 'assets/transport.jpg',
-        description: 'Protect your phone, protect the planet',
-      ),
-    ];
+  // static List<Product> getMockProducts() async {
+  static Future<List<Product>> getMockProducts() async {
+    List<Product> productList = [];
+    try {
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('Products')
+          .get();
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        productList.add(
+          Product(
+            id: doc.id,
+            name: data['name'] ?? '',
+            price: (data['price'] ?? 0).toDouble(),
+            greenPoints: (data['greenPoints'] ?? 0).toDouble(),
+            co2Saved: (data['co2'] ?? 0).toDouble(),
+            imageUrl: data['image'] ?? '',
+            description: data['description'] ?? '',
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error $e");
+    }
+    return productList;
   }
 }
 
@@ -107,6 +84,7 @@ class EcoProducts extends StatefulWidget {
 
 class EcoProductsState extends State<EcoProducts> {
   final TextEditingController searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   String selectedSort = 'Name A-Z';
   List<Product> products = [];
   List<Product> filteredProducts = [];
@@ -117,10 +95,21 @@ class EcoProductsState extends State<EcoProducts> {
     loadProducts();
   }
 
-  void loadProducts() {
-    products = ProductService.getMockProducts();
-    filteredProducts = products;
-    sortProducts();
+  Future<void> loadProducts() async {
+    final fetchedProducts = await ProductService.getMockProducts();
+    if (!mounted) return;
+    setState(() {
+      products = fetchedProducts;
+      filteredProducts = List<Product>.from(fetchedProducts);
+      sortProducts();
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void filterProducts(String query) {
@@ -252,7 +241,7 @@ class EcoProductsState extends State<EcoProducts> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -263,14 +252,14 @@ class EcoProductsState extends State<EcoProducts> {
         children: [
           // 🖼 Image section
           SizedBox(
-            height: 120,
+            height: 100,
             child: Stack(
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(16),
                   ),
-                  child: Image.asset(
+                  child: Image.network(
                     product.imageUrl,
                     width: double.infinity,
                     height: double.infinity,
@@ -285,7 +274,7 @@ class EcoProductsState extends State<EcoProducts> {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -400,30 +389,11 @@ class EcoProductsState extends State<EcoProducts> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F8F5),
       bottomNavigationBar: buildCustomBottomBar(context, 3),
-      // appBar: buildCustomAppBar(context),
-
-      // appBar: AppBar(
-      //   backgroundColor: const Color(0xFF2E7D32),
-      //   elevation: 0,
-      //   // Do not set a leading property; default is no back button for top-level routes.
-      //   title: const Text(
-      //     'Eco Products',
-      //     style: TextStyle(
-      //       fontWeight: FontWeight.bold,
-      //       fontSize: 22,
-      //       color: Colors.white,
-      //     ),
-      //   ),
-      //   centerTitle: true,
-      //   shape: const RoundedRectangleBorder(
-      //     borderRadius: BorderRadius.vertical(
-      //       bottom: Radius.circular(24),
-      //     ),
-      //   ),
-      // ),
       body: Scrollbar(
+        controller: _scrollController,
         thumbVisibility: true,
         child: CustomScrollView(
+          controller: _scrollController,
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverAppBar(
@@ -459,7 +429,7 @@ class EcoProductsState extends State<EcoProducts> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -491,7 +461,7 @@ class EcoProductsState extends State<EcoProducts> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
