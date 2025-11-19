@@ -47,8 +47,14 @@ class MainApp extends StatelessWidget {
         '/AdminProducts': (context) => const ManageEcoProductsScreen(),
         '/AdminProfile': (context) => const AdminProfileScreen(),
         '/Products': (context) => const EcoProducts(),
-        '/ProductsDetails': (context) => const ProductDetailPage(),
-        '/BuyNow': (context) => const BuyScreen(),
+        '/ProductsDetails': (context) {
+          final product = ModalRoute.of(context)!.settings.arguments;
+          return ProductDetailPage(product: product);
+        },
+        '/BuyNow':  (context) {
+          final product = ModalRoute.of(context)!.settings.arguments;
+          return ConfirmPurchasePage(product: product);
+        },
         '/Wishlist': (context) => const WishlistScreen(),
       },
     );

@@ -1,25 +1,9 @@
 import 'package:flutter/material.dart';
-
-class BuyScreen extends StatelessWidget {
-  const BuyScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Confirm Purchase',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF2E7D32), // your green theme
-        scaffoldBackgroundColor: const Color(0xFFE8F5E9),
-      ),
-      home: const ConfirmPurchasePage(),
-    );
-  }
-}
+import 'package:sustainable_living/home/products.dart';
 
 class ConfirmPurchasePage extends StatefulWidget {
-  const ConfirmPurchasePage({super.key});
+  final dynamic product;
+  const ConfirmPurchasePage({super.key, required this.product});
 
   @override
   State<ConfirmPurchasePage> createState() => _ConfirmPurchasePageState();
@@ -33,6 +17,14 @@ class _ConfirmPurchasePageState extends State<ConfirmPurchasePage> {
 
   @override
   Widget build(BuildContext context) {
+        if (widget.product == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Product Details')),
+        body: const Center(child: Text('Product not found')),
+      );
+    }
+
+    final product = widget.product as Product;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -98,14 +90,17 @@ class _ConfirmPurchasePageState extends State<ConfirmPurchasePage> {
                           const Text(
                             'Bamboo Water Bottle',
                             style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           const Text(
                             '\$25.00',
                             style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.green),
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green,
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Row(
@@ -131,13 +126,17 @@ class _ConfirmPurchasePageState extends State<ConfirmPurchasePage> {
                                     shape: BoxShape.circle,
                                   ),
                                   padding: const EdgeInsets.all(6),
-                                  child: const Icon(Icons.remove,
-                                      color: Colors.green, size: 20),
+                                  child: const Icon(
+                                    Icons.remove,
+                                    color: Colors.green,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
                                 child: Text(
                                   '$quantity',
                                   style: const TextStyle(
@@ -156,8 +155,11 @@ class _ConfirmPurchasePageState extends State<ConfirmPurchasePage> {
                                     shape: BoxShape.circle,
                                   ),
                                   padding: const EdgeInsets.all(6),
-                                  child: const Icon(Icons.add,
-                                      color: Colors.white, size: 20),
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             ],
@@ -181,10 +183,7 @@ class _ConfirmPurchasePageState extends State<ConfirmPurchasePage> {
               ),
               const SizedBox(height: 8),
 
-              _buildTextField(
-                controller: nameController,
-                hint: 'Full Name',
-              ),
+              _buildTextField(controller: nameController, hint: 'Full Name'),
               const SizedBox(height: 10),
               _buildTextField(
                 controller: addressController,
@@ -224,10 +223,7 @@ class _ConfirmPurchasePageState extends State<ConfirmPurchasePage> {
                         value: 'Credit/Debit Card',
                         child: Text('Credit/Debit Card'),
                       ),
-                      DropdownMenuItem(
-                        value: 'PayPal',
-                        child: Text('PayPal'),
-                      ),
+                      DropdownMenuItem(value: 'PayPal', child: Text('PayPal')),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -285,8 +281,10 @@ class _ConfirmPurchasePageState extends State<ConfirmPurchasePage> {
         hintText: hint,
         filled: true,
         fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 14,
+          horizontal: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.green.shade200),
@@ -316,10 +314,7 @@ class _ConfirmPurchasePageState extends State<ConfirmPurchasePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'OK',
-              style: TextStyle(color: Colors.green),
-            ),
+            child: const Text('OK', style: TextStyle(color: Colors.green)),
           ),
         ],
       ),
