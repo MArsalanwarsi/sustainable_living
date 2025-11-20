@@ -62,7 +62,8 @@ Widget buildAdminCustomBottomBar(BuildContext context, int currentIndex) {
           '/AdminDashboard',
           '/AdminChallenges',
           '/AdminProducts',
-          '/AdminForm',
+          '/AdminFeed',
+          '/AdminTip',
         ];
         Navigator.pushReplacementNamed(context, routes[index]);
       },
@@ -82,6 +83,10 @@ Widget buildAdminCustomBottomBar(BuildContext context, int currentIndex) {
         BottomNavigationBarItem(
           icon: Icon(Icons.note_alt_outlined),
           label: 'Form',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.lightbulb_outline),
+          label: 'Tip',
         ),
       ],
     ),

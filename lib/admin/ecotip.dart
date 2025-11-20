@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustainable_living/Custom/admincustomwidget.dart';
 
 class AdminTipsListScreen extends StatefulWidget {
   const AdminTipsListScreen({super.key});
@@ -31,11 +32,9 @@ class _AdminTipsListScreenState extends State<AdminTipsListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFC3FFAB),
-      appBar: AppBar(
-        title: const Text("Manage Eco Tips"),
-        backgroundColor: Colors.green.shade700,
-      ),
+      backgroundColor: const Color(0xFFE6F3EA),
+      appBar: buildAdminCustomAppBar(context),
+      bottomNavigationBar: buildAdminCustomBottomBar(context, 4),
 
       /// ➕ Add Tip Floating Button (Static)
       floatingActionButton: FloatingActionButton.extended(

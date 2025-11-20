@@ -1,9 +1,31 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:sustainable_living/Custom/admincustomwidget.dart';
 
-class AdminDashboard extends StatelessWidget {
+class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
+
+  @override
+  State<AdminDashboard> createState() => _AdminDashboardState();
+}
+
+class _AdminDashboardState extends State<AdminDashboard> {
+  int userCount = 0;
+  @override
+  void initState() {
+    super.initState();
+    loaddata();
+  }
+
+  void loaddata() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    await firestore.collection('users').get().then((snapshot) {
+      userCount = snapshot.size;
+      setState(() {});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +46,11 @@ class AdminDashboard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 Expanded(
                   child: _StatCard(
                     title: "Users",
-                    value: "1,245",
+                    value: "$userCount",
                     icon: Icons.people,
                   ),
                 ),
@@ -109,13 +131,18 @@ class AdminDashboard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
                 Expanded(
-                  child: _QuickButton(icon: Icons.flag, label: "Add Challenge"),
+                  child: _QuickButton(
+                    icon: Icons.flag,
+                    label: "Add Challenge",
+                    routeName: "/AdminChallenges",
+                  ),
                 ),
                 SizedBox(width: 8),
                 Expanded(
                   child: _QuickButton(
                     icon: Icons.lightbulb_outline,
                     label: "Add Tip",
+                    routeName: "/AdminTip",
                   ),
                 ),
                 SizedBox(width: 8),
@@ -123,11 +150,16 @@ class AdminDashboard extends StatelessWidget {
                   child: _QuickButton(
                     icon: Icons.people,
                     label: "Manage Users",
+                    routeName: "",
                   ),
                 ),
                 SizedBox(width: 8),
                 Expanded(
-                  child: _QuickButton(icon: Icons.forum, label: "Forum"),
+                  child: _QuickButton(
+                    icon: Icons.forum,
+                    label: "Forum",
+                    routeName: "/AdminFeed",
+                  ),
                 ),
               ],
             ),
@@ -311,7 +343,12 @@ class _ActivityItem extends StatelessWidget {
 class _QuickButton extends StatelessWidget {
   final IconData icon;
   final String label;
-  const _QuickButton({required this.icon, required this.label});
+  final String routeName;
+  const _QuickButton({
+    required this.icon,
+    required this.label,
+    required this.routeName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -324,7 +361,9 @@ class _QuickButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
           alignment: Alignment.center,
         ),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushReplacementNamed(context, routeName);
+        },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

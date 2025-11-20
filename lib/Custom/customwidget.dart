@@ -63,7 +63,7 @@ Widget buildCustomBottomBar(BuildContext context, int currentIndex) {
           '/tracker',
           '/Challenges',
           '/Products',
-          '/form',
+          '/Form',
         ];
         Navigator.pushReplacementNamed(context, routes[index]);
       },

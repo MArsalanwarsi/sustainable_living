@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sustainable_living/admin/admin.dart';
+import 'package:sustainable_living/admin/adminChallenges.dart';
 import 'package:sustainable_living/admin/adminprofile.dart';
+import 'package:sustainable_living/admin/challangescrud.dart';
 import 'package:sustainable_living/admin/ecoproducts.dart';
+import 'package:sustainable_living/admin/ecotip.dart';
+import 'package:sustainable_living/admin/forumcrud.dart';
+import 'package:sustainable_living/forgot.dart';
 import 'package:sustainable_living/home/buynow.dart';
 import 'package:sustainable_living/home/detailpage.dart';
+import 'package:sustainable_living/home/forummain.dart';
 import 'package:sustainable_living/home/mainchallanges.dart';
 import 'package:sustainable_living/home/products.dart';
 import 'package:sustainable_living/home/tracker.dart';
@@ -14,6 +20,7 @@ import 'package:sustainable_living/home/home.dart';
 import 'package:sustainable_living/home/profile.dart';
 import 'package:sustainable_living/home/whishlist.dart';
 import 'package:sustainable_living/login.dart';
+import 'package:sustainable_living/reset.dart';
 import 'package:sustainable_living/selection.dart';
 import 'package:sustainable_living/signup.dart';
 import 'package:sustainable_living/splash.dart';
@@ -37,6 +44,8 @@ class MainApp extends StatelessWidget {
         '/Selection': (context) => const SelectionScreen(),
         '/Login': (context) => const LoginScreen(),
         '/Signup': (context) => const SignUpScreen(),
+        '/ForgetPassword': (context) => const ForgotPasswordScreen(),
+        '/Reset': (context) => const ResetPasswordScreen(),
         '/AdminDashboard': (context) => const AdminDashboard(),
         '/Home': (context) => const HomePage(),
         '/tracker': (context) => const TrackerHome(),
@@ -46,16 +55,21 @@ class MainApp extends StatelessWidget {
         '/Challenges': (context) => const EcoChallengesPage(),
         '/AdminProducts': (context) => const ManageEcoProductsScreen(),
         '/AdminProfile': (context) => const AdminProfileScreen(),
+        '/AdminTip': (context) => const AdminTipsListScreen(),
+        '/AdminChallenges': (context) => AdminChallengeListScreen(),
+        '/ChallengesDetail': (context) => PlasticFreeChallengeScreen(),
+        '/AdminFeed': (context) => AdminForumListScreen(),
         '/Products': (context) => const EcoProducts(),
         '/ProductsDetails': (context) {
           final product = ModalRoute.of(context)!.settings.arguments;
           return ProductDetailPage(product: product);
         },
-        '/BuyNow':  (context) {
+        '/BuyNow': (context) {
           final product = ModalRoute.of(context)!.settings.arguments;
           return ConfirmPurchasePage(product: product);
         },
         '/Wishlist': (context) => const WishlistScreen(),
+        '/Form': (context) => const MainFeedScreen(),
       },
     );
   }

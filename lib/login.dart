@@ -247,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           cursor: SystemMouseCursors.click,
                           child: GestureDetector(
                             onTap: () {
-                              // TODO: Add Forgot Password navigation
+                              Navigator.pushNamed(context, '/ForgetPassword');
                             },
                             child: Text(
                               'Forgot Password ?',

@@ -17,6 +17,8 @@ dependencies:
   image_picker: ^1.2.0
   cloudinary_public: 0.23.1
   cached_network_image: ^3.4.1
+  intl: ^0.20.2
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

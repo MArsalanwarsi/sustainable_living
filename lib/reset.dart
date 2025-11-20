@@ -6,21 +6,18 @@ class ResetPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFC3FFAB),
+      backgroundColor: const Color(0xFFC3FFAB), // Maintain theme
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
               const SizedBox(height: 30),
-
               Image.asset(
                 'assets/name.png',
-                height: MediaQuery.of(context).size.height * 0.2, // 50% height
+                height: MediaQuery.of(context).size.height * 0.2,
               ),
-
               const SizedBox(height: 30),
-
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -36,75 +33,59 @@ class ResetPasswordScreen extends StatelessWidget {
                   ],
                 ),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    Icon(
+                      Icons.email_outlined,
+                      size: 60,
+                      color: Colors.green.shade700,
+                    ),
+                    const SizedBox(height: 12),
                     Text(
-                      "Reset Password",
+                      "Reset Link Sent!",
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.green.shade800,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
                     const Text(
-                      "Enter your new password",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    /// Password
-                    TextField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
-                        hintText: "New Password",
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
+                      "A password reset link has been sent to your email address. Please check your inbox (and spam folder) for further instructions.",
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-
-                    const SizedBox(height: 20),
-
-                    /// Confirm Password
-                    TextField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
-                        hintText: "Confirm Password",
-                        prefixIcon: const Icon(Icons.lock_reset),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 25),
-
+                    const SizedBox(height: 30),
                     SizedBox(
                       width: double.infinity,
                       height: 45,
-                      child: ElevatedButton(
+                      child: ElevatedButton.icon(
                         onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                          Navigator.pop(context);
+                          Navigator.of(context).popUntil((route) => route.settings.name == '/Login' || route.isFirst);
+                          // If stack doesn't include '/Login', you might want:
+                          // Navigator.of(context).pushReplacementNamed('/Login');
                         },
+                        icon: Icon(
+                          Icons.login,
+                          color: Colors.white,
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green.shade700,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          elevation: 1,
                         ),
-                        child: const Text(
-                          "Save Password",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        label: const Text(
+                          'Back to Login',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
