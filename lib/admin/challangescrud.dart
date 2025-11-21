@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustainable_living/Custom/admincustomwidget.dart';
 
 class AdminChallengeListScreen extends StatefulWidget {
   const AdminChallengeListScreen({super.key});
@@ -32,11 +33,9 @@ class _AdminChallengeListScreenState extends State<AdminChallengeListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFC3FFAB),
-      appBar: AppBar(
-        title: const Text("Manage Challenges"),
-        backgroundColor: Colors.green.shade700,
-      ),
+      backgroundColor: const Color(0xFFE6F3EA),
+      appBar:buildAdminCustomAppBar(context),
+      bottomNavigationBar: buildAdminCustomBottomBar(context, 1),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -52,7 +52,7 @@ Widget buildAdminCustomBottomBar(BuildContext context, int currentIndex) {
       unselectedFontSize: 12,
       selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400),
-      currentIndex: (currentIndex >= 0 && currentIndex < 5) ? currentIndex : -1,
+      currentIndex: (currentIndex >= 0 && currentIndex < 6) ? currentIndex : -1,
       selectedItemColor: Colors.green.shade700,
       unselectedItemColor: Colors.grey,
       onTap: (int index) {
@@ -64,6 +64,7 @@ Widget buildAdminCustomBottomBar(BuildContext context, int currentIndex) {
           '/AdminProducts',
           '/AdminFeed',
           '/AdminTip',
+          '/UserManagement',
         ];
         Navigator.pushReplacementNamed(context, routes[index]);
       },
@@ -87,6 +88,10 @@ Widget buildAdminCustomBottomBar(BuildContext context, int currentIndex) {
         BottomNavigationBarItem(
           icon: Icon(Icons.lightbulb_outline),
           label: 'Tip',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.people_outline),
+          label: 'Users',
         ),
       ],
     ),

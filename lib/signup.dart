@@ -25,6 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.initState();
     _checkUser();
   }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -33,8 +34,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
+
   Future<void> _checkUser() async {
-    final user =  FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
       String uid = user.uid;
@@ -97,6 +99,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 .doc(uid);
             userRef.set({
               'name': name,
+              'email': email,
               'role': 'user',
               'profile_image': '',
               'email_verified': false,

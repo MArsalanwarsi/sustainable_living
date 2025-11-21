@@ -7,6 +7,7 @@ import 'package:sustainable_living/admin/challangescrud.dart';
 import 'package:sustainable_living/admin/ecoproducts.dart';
 import 'package:sustainable_living/admin/ecotip.dart';
 import 'package:sustainable_living/admin/forumcrud.dart';
+import 'package:sustainable_living/admin/usermanagement.dart';
 import 'package:sustainable_living/forgot.dart';
 import 'package:sustainable_living/home/buynow.dart';
 import 'package:sustainable_living/home/detailpage.dart';
@@ -70,6 +71,7 @@ class MainApp extends StatelessWidget {
         },
         '/Wishlist': (context) => const WishlistScreen(),
         '/Form': (context) => const MainFeedScreen(),
+        '/UserManagement':(context)=>const AdminUserManagementScreen(),
       },
     );
   }

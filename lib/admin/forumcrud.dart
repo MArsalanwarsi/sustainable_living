@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:sustainable_living/Custom/admincustomwidget.dart';
-import 'package:sustainable_living/Custom/customwidget.dart';
 
 class AdminForumListScreen extends StatefulWidget {
   const AdminForumListScreen({super.key});
@@ -12,94 +16,51 @@ class AdminForumListScreen extends StatefulWidget {
 class _AdminForumListScreenState extends State<AdminForumListScreen> {
   String selectedSort = 'Newest';
   String searchQuery = '';
-  List<Map<String, dynamic>> posts = [
-    {
-      "type": "facebook",
-      "id": "1",
-      "name": "Saqib Ahmed",
-      "avatar": "https://randomuser.me/api/portraits/men/11.jpg",
-      "title": "How to reduce plastic at home?",
-      "desc":
-          "What are some practical ideas to reduce plastic usage, especially in the kitchen? Looking for actionable tips!",
-      "image":
-          "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=60",
-      "category": "Recycling",
-      "status": "Pending",
-      "datetime": DateTime.now().subtract(const Duration(hours: 1)),
-    },
-    {
-      "type": "instagram",
-      "id": "2",
-      "name": "Ali Khan",
-      "avatar": "https://randomuser.me/api/portraits/men/80.jpg",
-      "title": null,
-      "desc":
-          "Just started reducing my electricity bill – and it feels great! 💡⚡️",
-      "image":
-          "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=60",
-      "category": "Energy Saving",
-      "status": "Approved",
-      "datetime": DateTime.now().subtract(const Duration(days: 1, minutes: 14)),
-    },
-    {
-      "type": "facebook",
-      "id": "3",
-      "name": "Ayesha",
-      "avatar": "https://randomuser.me/api/portraits/women/32.jpg",
-      "title": "Is cycling better than walking?",
-      "desc":
-          "Which is more environmentally friendly and good for health: cycling or walking?",
-      "image": null,
-      "category": "Transport",
-      "status": "Reported",
-      "datetime": DateTime.now().subtract(const Duration(days: 3, hours: 2)),
-    },
-    {
-      "type": "instagram",
-      "id": "4",
-      "name": "Annie",
-      "avatar": "https://randomuser.me/api/portraits/women/85.jpg",
-      "title": null,
-      "desc":
-          "Check out my recycled jars for pantry organisation! 🫙🌱 #EcoHacks",
-      "image":
-          "https://images.unsplash.com/photo-1520880867055-1e30d1cb001c?auto=format&fit=crop&w=600&q=60",
-      "category": "Recycling",
-      "status": "Approved",
-      "datetime": DateTime.now().subtract(const Duration(hours: 5, minutes: 8)),
-    },
-  ];
-
-  List<Map<String, dynamic>> get filteredPosts {
-    List<Map<String, dynamic>> results = posts.where((p) {
-      final query = searchQuery.toLowerCase();
-      return (p['title']?.toLowerCase().contains(query) ?? false) ||
-          (p['desc']?.toLowerCase().contains(query) ?? false) ||
-          (p['name']?.toLowerCase().contains(query) ?? false);
-    }).toList();
-
-    results.sort((a, b) {
-      if (selectedSort == 'Newest') {
-        return (b['datetime'] as DateTime).compareTo(a['datetime'] as DateTime);
-      } else if (selectedSort == 'Oldest') {
-        return (a['datetime'] as DateTime).compareTo(b['datetime'] as DateTime);
-      } else if (selectedSort == 'A - Z') {
-        String nameA = a['name']?.toString().toLowerCase() ?? '';
-        String nameB = b['name']?.toString().toLowerCase() ?? '';
-        return nameA.compareTo(nameB);
-      } else if (selectedSort == 'Z - A') {
-        String nameA = a['name']?.toString().toLowerCase() ?? '';
-        String nameB = b['name']?.toString().toLowerCase() ?? '';
-        return nameB.compareTo(nameA);
-      }
-      return 0;
-    });
-    return results;
-  }
 
   Color get greenMain => const Color(0xFF448C2F);
   Color get greenDark => const Color(0xFF205907);
   Color get mintBackground => const Color(0xFFE6F3EA);
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> get feedsStream =>
+      FirebaseFirestore.instance.collection('Feeds').snapshots();
+
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _sortAndFilterPosts(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) {
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> filtered = docs.where((
+      doc,
+    ) {
+      final data = doc.data();
+      final query = searchQuery.toLowerCase();
+      return (data['title']?.toString().toLowerCase().contains(query) ??
+              false) ||
+          (data['description']?.toString().toLowerCase().contains(query) ??
+              false) ||
+          (data['name']?.toString().toLowerCase().contains(query) ?? false);
+    }).toList();
+
+    filtered.sort((a, b) {
+      final dataA = a.data();
+      final dataB = b.data();
+      final dtA = (dataA['createdDate'] as Timestamp?)?.toDate();
+      final dtB = (dataB['createdDate'] as Timestamp?)?.toDate();
+      if (selectedSort == 'Newest') {
+        return (dtB ?? DateTime(2000)).compareTo(dtA ?? DateTime(2000));
+      } else if (selectedSort == 'Oldest') {
+        return (dtA ?? DateTime(2000)).compareTo(dtB ?? DateTime(2000));
+      } else if (selectedSort == 'A - Z') {
+        String nameA = dataA['name']?.toString().toLowerCase() ?? '';
+        String nameB = dataB['name']?.toString().toLowerCase() ?? '';
+        return nameA.compareTo(nameB);
+      } else if (selectedSort == 'Z - A') {
+        String nameA = dataA['name']?.toString().toLowerCase() ?? '';
+        String nameB = dataB['name']?.toString().toLowerCase() ?? '';
+        return nameB.compareTo(nameA);
+      }
+      return 0;
+    });
+    return filtered;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +70,7 @@ class _AdminForumListScreenState extends State<AdminForumListScreen> {
     return Scaffold(
       backgroundColor: mintBackground,
       appBar: buildAdminCustomAppBar(context),
-      bottomNavigationBar: buildAdminCustomBottomBar(context,3),
+      bottomNavigationBar: buildAdminCustomBottomBar(context, 3),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: width * 0.06, vertical: 20),
@@ -251,25 +212,41 @@ class _AdminForumListScreenState extends State<AdminForumListScreen> {
                 ],
               ),
               const SizedBox(height: 25),
-              ListView.builder(
-                itemCount: filteredPosts.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final post = filteredPosts[index];
-                  return _FacebookPostCard(
-                    avatarUrl: post['avatar'] ?? '',
-                    name: post['name'] ?? 'Unknown',
-                    title: post['title'] ?? '',
-                    desc: post['desc'] ?? '',
-                    imageUrl: post['image'],
-                    category: post['category'] ?? '',
-                    status: post['status'] ?? '',
-                    datetime: post['datetime'] as DateTime,
-                    onInfo: () => _showPostInfoDialog(post),
-                    onEdit: () => _showEditPostDialog(post),
-                    onDelete: () => _showDeleteConfirmationDialog(post),
-                    greenDark: greenDark,
+              StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: feedsStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Text(
+                      'No posts found.',
+                      style: TextStyle(color: Colors.grey),
+                    );
+                  }
+                  final filteredDocs = _sortAndFilterPosts(snapshot.data!.docs);
+
+                  return ListView.builder(
+                    itemCount: filteredDocs.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final doc = filteredDocs[index];
+                      final data = doc.data();
+                      return _FacebookPostCard(
+                        title: data['title'] ?? '',
+                        desc: data['description'] ?? '',
+                        imageUrl: data['imageUrl'],
+                        status: data['status'] ?? '',
+                        datetime:
+                            (data['createdDate'] as Timestamp?)?.toDate() ??
+                            DateTime.now(),
+                        onInfo: () => _showPostInfoDialog(data),
+                        onEdit: () => _showEditPostDialog(doc),
+                        onDelete: () => _showDeleteConfirmationDialog(doc),
+                        greenDark: greenDark,
+                      );
+                    },
                   );
                 },
               ),
@@ -287,42 +264,38 @@ class _AdminForumListScreenState extends State<AdminForumListScreen> {
   void _showAddPostDialog() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Add New Post"),
-        content: const Text("Post creation UI coming soon..."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text("Close"),
-          ),
-        ],
+      builder: (ctx) => FeedCrudDialog(
+        onComplete: () {
+          Navigator.of(ctx).pop();
+        },
+        type: FeedCrudType.add,
       ),
     );
   }
 
-  void _showEditPostDialog(Map<String, dynamic> post) {
+  void _showEditPostDialog(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Edit Post"),
-        content: const Text("Edit post UI coming soon..."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text("Close"),
-          ),
-        ],
+      builder: (ctx) => FeedCrudDialog(
+        onComplete: () {
+          Navigator.of(ctx).pop();
+        },
+        type: FeedCrudType.edit,
+        doc: doc,
       ),
     );
   }
 
-  void _showDeleteConfirmationDialog(Map<String, dynamic> post) {
+  void _showDeleteConfirmationDialog(
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final data = doc.data();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Delete Post"),
         content: Text(
-          "Are you sure you want to delete this post by ${post["name"]}?",
+          "Are you sure you want to delete this post by ${data["name"]}?",
         ),
         actions: [
           TextButton(
@@ -330,10 +303,11 @@ class _AdminForumListScreenState extends State<AdminForumListScreen> {
             child: const Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
-              setState(() {
-                posts.removeWhere((e) => e['id'] == post['id']);
-              });
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection('Feeds')
+                  .doc(doc.id)
+                  .delete();
               Navigator.of(ctx).pop();
             },
             child: const Text("Delete", style: TextStyle(color: Colors.red)),
@@ -347,7 +321,7 @@ class _AdminForumListScreenState extends State<AdminForumListScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(post['name']),
+        title: Text(post['name'] ?? "--"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -356,10 +330,10 @@ class _AdminForumListScreenState extends State<AdminForumListScreen> {
                 post['title'],
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-            if (post['desc'] != null)
+            if (post['description'] != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
-                child: Text(post['desc']),
+                child: Text(post['description']),
               ),
             if (post['category'] != null)
               Padding(
@@ -383,14 +357,21 @@ class _AdminForumListScreenState extends State<AdminForumListScreen> {
                   ],
                 ),
               ),
-            if (post['datetime'] != null)
+            if (post['createdDate'] != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Row(
                   children: [
                     const Icon(Icons.access_time, size: 18),
                     const SizedBox(width: 6),
-                    Text(post['datetime'].toString().substring(0, 16)),
+                    Text(
+                      (post['createdDate'] is Timestamp)
+                          ? (post['createdDate'] as Timestamp)
+                                .toDate()
+                                .toString()
+                                .substring(0, 16)
+                          : post['createdDate'].toString().substring(0, 16),
+                    ),
                   ],
                 ),
               ),
@@ -409,12 +390,9 @@ class _AdminForumListScreenState extends State<AdminForumListScreen> {
 
 /// Facebook style post card
 class _FacebookPostCard extends StatelessWidget {
-  final String avatarUrl;
-  final String name;
   final String title;
   final String desc;
   final String? imageUrl;
-  final String category;
   final String status;
   final DateTime datetime;
   final VoidCallback onInfo;
@@ -423,12 +401,9 @@ class _FacebookPostCard extends StatelessWidget {
   final Color greenDark;
 
   const _FacebookPostCard({
-    required this.avatarUrl,
-    required this.name,
     required this.title,
     required this.desc,
     required this.imageUrl,
-    required this.category,
     required this.status,
     required this.datetime,
     required this.onInfo,
@@ -453,8 +428,10 @@ class _FacebookPostCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  backgroundImage: NetworkImage(avatarUrl),
                   radius: 22,
+                  backgroundImage: const AssetImage('assets/name.png'),
+                  child: Container(), // No child so the image is shown clearly
+                  // If you want an icon overlay only if image fails, use backgroundImage.
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -462,7 +439,7 @@ class _FacebookPostCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        name,
+                        "Sustainable Living",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: greenDark,
@@ -470,7 +447,7 @@ class _FacebookPostCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        "${datetime.toLocal().toString().substring(0, 16)} • $category",
+                        datetime.toLocal().toString().substring(0, 16),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.black45,
@@ -520,6 +497,260 @@ class _FacebookPostCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+///
+/// Feed Create/Edit Dialog with Cloudinary Image Upload (Web-Safe)
+///
+enum FeedCrudType { add, edit }
+
+class FeedCrudDialog extends StatefulWidget {
+  final VoidCallback onComplete;
+  final FeedCrudType type;
+  final QueryDocumentSnapshot<Map<String, dynamic>>? doc;
+
+  const FeedCrudDialog({
+    required this.onComplete,
+    required this.type,
+    this.doc,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<FeedCrudDialog> createState() => _FeedCrudDialogState();
+}
+
+class _FeedCrudDialogState extends State<FeedCrudDialog> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _title = TextEditingController();
+  final TextEditingController _desc = TextEditingController();
+  DateTime? _createdDate;
+  String? _imageUrl;
+  bool _isLoading = false;
+  XFile? _pickedFile; // Use XFile instead of dart:io File for compatibility
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.type == FeedCrudType.edit && widget.doc != null) {
+      final data = widget.doc!.data();
+      _title.text = data['title'] ?? '';
+      _desc.text = data['description'] ?? '';
+      _imageUrl = data['imageUrl'];
+      _createdDate =
+          (data['createdDate'] as Timestamp?)?.toDate() ?? DateTime.now();
+    } else {
+      _createdDate = DateTime.now();
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (picked != null) {
+      setState(() {
+        _pickedFile = picked;
+      });
+      await _uploadToCloudinary(_pickedFile!);
+    }
+  }
+
+  // Web-friendly Cloudinary upload using http.MultipartRequest, XFile.bytes, and XFile.name.
+  Future<void> _uploadToCloudinary(XFile xfile) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Replace with your Cloudinary Cloud Name and unsigned preset
+    final String cloudName = 'dlmhuap1u';
+    final String uploadPreset = 'Sus_living';
+
+    try {
+      final bytes = await xfile.readAsBytes();
+
+      var uri = Uri.parse(
+        'https://api.cloudinary.com/v1_1/$cloudName/image/upload',
+      );
+      var request = http.MultipartRequest('POST', uri);
+      request.fields['upload_preset'] = uploadPreset;
+
+      // Use MultipartFile.fromBytes for web support
+      request.files.add(
+        http.MultipartFile.fromBytes('file', bytes, filename: xfile.name),
+      );
+
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final body =
+            json.decode(await response.stream.bytesToString())
+                as Map<String, dynamic>;
+        _imageUrl = body['secure_url'];
+        setState(() {});
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Image Upload Failed.')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Image Upload Error: $e')));
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _submit() async {
+    final isValid = _formKey.currentState?.validate() ?? false;
+    if (!isValid) return;
+    setState(() => _isLoading = true);
+
+    final data = <String, dynamic>{
+      "title": _title.text.trim(),
+      "description": _desc.text.trim(),
+      "createdDate": _createdDate ?? DateTime.now(),
+      "imageUrl": _imageUrl ?? "",
+      "status": widget.type == FeedCrudType.edit && widget.doc != null
+          ? widget.doc!.data()['status'] ?? "Approved"
+          : "Approved",
+    };
+
+    if (widget.type == FeedCrudType.add) {
+      await FirebaseFirestore.instance.collection('Feeds').add(data);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Post Added!')));
+    } else {
+      await FirebaseFirestore.instance
+          .collection('Feeds')
+          .doc(widget.doc!.id)
+          .update(data);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Post Updated!')));
+    }
+    setState(() => _isLoading = false);
+    widget.onComplete();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(
+        widget.type == FeedCrudType.add ? "Add New Post" : "Edit Post",
+      ),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // TITLE
+              TextFormField(
+                controller: _title,
+                decoration: const InputDecoration(
+                  labelText: "Title",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return "Title is required";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 14),
+              // DESC
+              TextFormField(
+                controller: _desc,
+                decoration: const InputDecoration(
+                  labelText: "Description",
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return "Description is required";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 14),
+
+              // Image
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _imageUrl != null && _imageUrl!.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(7),
+                          child: Image.network(
+                            _imageUrl!,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(7),
+                          ),
+                          child: const Icon(Icons.image, color: Colors.grey),
+                        ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _isLoading ? null : _pickImage,
+                      icon: const Icon(Icons.upload_file),
+                      label: Text(_isLoading ? "Uploading..." : "Upload Photo"),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Created Date (readonly)
+              TextFormField(
+                enabled: false,
+                decoration: InputDecoration(
+                  labelText: "Created Date",
+                  border: const OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+                initialValue: _createdDate != null
+                    ? _createdDate.toString().substring(0, 16)
+                    : "",
+              ),
+
+              if (_isLoading) ...[
+                const SizedBox(height: 12),
+                const LinearProgressIndicator(),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            if (!_isLoading) Navigator.of(context).pop();
+          },
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : _submit,
+          child: Text(widget.type == FeedCrudType.add ? "Add" : "Update"),
+        ),
+      ],
     );
   }
 }

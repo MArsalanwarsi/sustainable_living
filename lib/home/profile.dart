@@ -230,7 +230,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               GestureDetector(
                 onTap: () {
                   FirebaseAuth.instance.signOut();
-                  Navigator.pushReplacementNamed(context, '/Selection');
+                  Navigator.pushReplacementNamed(context, '/Login');
                 },
                 child: Container(
                   width: double.infinity,

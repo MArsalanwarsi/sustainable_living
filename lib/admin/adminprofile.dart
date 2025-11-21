@@ -243,7 +243,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                       color: Colors.red.shade700,
                       onTap: () {
                         FirebaseAuth.instance.signOut();
-                        Navigator.pushReplacementNamed(context, '/Selection');
+                        Navigator.pushReplacementNamed(context, '/Login');
                       },
                     ),
                   ),
