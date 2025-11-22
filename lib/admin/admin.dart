@@ -12,6 +12,10 @@ class AdminDashboard extends StatefulWidget {
 
 class _AdminDashboardState extends State<AdminDashboard> {
   int userCount = 0;
+  int feedCount = 0;
+  int tipsCount = 0;
+  DocumentSnapshot? latestTipDoc;
+
   @override
   void initState() {
     super.initState();
@@ -21,14 +25,36 @@ class _AdminDashboardState extends State<AdminDashboard> {
   void loaddata() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    await firestore.collection('users').get().then((snapshot) {
-      userCount = snapshot.size;
-      setState(() {});
+    final usersSnap = await firestore.collection('users').get();
+    setState(() {
+      userCount = usersSnap.size;
+    });
+
+    final feedsSnap = await firestore.collection('Feeds').get();
+    setState(() {
+      feedCount = feedsSnap.size;
+    });
+
+    final tipsSnap = await firestore.collection('Tips').get();
+    setState(() {
+      tipsCount = tipsSnap.size;
+    });
+
+    final tipsLatest =
+        await firestore.collection('Tips').orderBy('created', descending: true).limit(1).get();
+
+    // Get the first doc or null
+    setState(() {
+      latestTipDoc = tipsLatest.docs.isNotEmpty ? tipsLatest.docs.first : null;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final latestTipTitle = latestTipDoc?.data() is Map
+        ? (latestTipDoc!.data() as Map)['title']?.toString() ?? ''
+        : '';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F8F5),
       appBar: buildAdminCustomAppBar(context),
@@ -66,7 +92,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 Expanded(
                   child: _StatCard(
                     title: "Tips",
-                    value: "58",
+                    value: "$tipsCount",
                     icon: Icons.lightbulb_outline,
                   ),
                 ),
@@ -74,7 +100,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 Expanded(
                   child: _StatCard(
                     title: "Forum",
-                    value: "124",
+                    value: "$feedCount",
                     icon: Icons.forum,
                   ),
                 ),
@@ -110,10 +136,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
-                children: const [
-                  _ActivityItem("Saqib joined Water Saver Challenge"),
-                  _ActivityItem("New tip 'Save Water at Home' posted"),
-                  _ActivityItem("5 forum posts approved"),
+                children: [
+                  const _ActivityItem("Saqib joined Water Saver Challenge"),
+                  _ActivityItem(
+                    "New tip '${latestTipTitle}' posted"
+                  ),
+                  _ActivityItem("$feedCount forum posts approved"),
                 ],
               ),
             ),
@@ -150,7 +178,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   child: _QuickButton(
                     icon: Icons.people,
                     label: "Manage Users",
-                    routeName: "",
+                    routeName: "/UserManagement",
                   ),
                 ),
                 SizedBox(width: 8),

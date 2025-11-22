@@ -22,11 +22,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   // ========== DYNAMIC DATA VARIABLES (For Firebase Integration) ==========
 
   // Admin Statistics
-  int totalUsers = 1245;
-  int activeUsers = 892;
   int totalChallenges = 32;
   int activeChallenges = 18;
-  int totalProducts = 45;
   int totalPosts = 124;
 
   // User Growth Data (last 7 days)
@@ -42,6 +39,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   int totalCO2Saved = 1250; // kg
   int totalGreenPoints = 45000;
 
+  //dynamic
+  int userCount = 0;
+  int productCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -54,7 +55,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     } else {
       uid = user?.uid;
       try {
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        DocumentSnapshot userDoc = await firestore
             .collection('users')
             .doc(uid)
             .get();
@@ -69,21 +71,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             email = user?.email;
             profile = data['profile_image'];
 
-            // TODO: Fetch admin statistics from Firebase
-            // Example:
-            // DocumentSnapshot statsDoc = await FirebaseFirestore.instance
-            //     .collection('admin_stats')
-            //     .doc('platform')
-            //     .get();
-            // if (statsDoc.exists) {
-            //   final stats = statsDoc.data() as Map<String, dynamic>;
-            //   setState(() {
-            //     totalUsers = stats['total_users'] ?? 1245;
-            //     activeUsers = stats['active_users'] ?? 892;
-            //     // ... etc
-            //   });
-            // }
-
+            final usersSnap = await firestore.collection('users').get();
+            userCount = usersSnap.size;
+            final productSnap = await firestore.collection('Products').get();
+            productCount = productSnap.size;
             setState(() {});
           }
         }
@@ -133,7 +124,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   Expanded(
                     child: _AdminStatCard(
                       title: "Total Users",
-                      value: totalUsers.toString(),
+                      value: '$userCount',
                       icon: Icons.people,
                       color: Colors.blue.shade700,
                     ),
@@ -142,7 +133,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   Expanded(
                     child: _AdminStatCard(
                       title: "Active Users",
-                      value: activeUsers.toString(),
+                      value: '$userCount',
                       icon: Icons.verified_user,
                       color: Colors.green.shade700,
                     ),
@@ -164,7 +155,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   Expanded(
                     child: _AdminStatCard(
                       title: "Products",
-                      value: totalProducts.toString(),
+                      value: '$productCount',
                       icon: Icons.shopping_bag,
                       color: Colors.purple.shade700,
                     ),

@@ -1,52 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sustainable_living/Custom/customwidget.dart';
+import 'forumdetail.dart';
 
 class MainFeedScreen extends StatelessWidget {
   const MainFeedScreen({super.key});
-
-  // Dummy feed data
-  static final List<FeedItem> feeds = [
-    FeedItem(
-      image: 'assets/solar.png',
-      title: 'Solar Panels for Clean Energy',
-      description: 'Discover how rooftop solar panels help reduce carbon footprint and power homes with renewable energy.',
-      detail: 'Solar panels are a sustainable solution for generating clean, renewable energy right on your rooftop. Besides reducing electricity bills, they contribute significantly to cutting down fossil fuel usage, lowering overall emissions, and forging a path toward a greener future.',
-    ),
-    FeedItem(
-      image: 'assets/bottle.png',
-      title: 'Switching to Bamboo Bottles',
-      description: "An eco-friendly alternative to plastic bottles, bamboo reduces waste and keeps drinks fresh.",
-      detail: "Bamboo bottles are biodegradable, reusable, and naturally antimicrobial. Making the switch not only benefits your health but also contributes to a circular economy by curbing single-use plastics.",
-    ),
-    FeedItem(
-      image: 'assets/bin.png',
-      title: 'Composting for Greener Gardens',
-      description: "Composting kitchen waste is easy and rewarding. Convert scraps to gold for your plants.",
-      detail: "Composting diverts food waste from landfills and creates nutrient-rich soil for gardening. Even apartment dwellers can start composting with simple bins, reaping environmental and personal benefits.",
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF4F7FA),
       appBar: buildCustomAppBar(context),
-      bottomNavigationBar: buildCustomBottomBar(context,4),
+      bottomNavigationBar: buildCustomBottomBar(context, 4),
       body: SafeArea(
-        child: ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 22),
-          itemCount: feeds.length,
-          separatorBuilder: (context, idx) => const SizedBox(height: 19),
-          itemBuilder: (context, idx) {
-            final feed = feeds[idx];
-            return _FeedPostCard(
-              feed: feed,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => FeedDetailScreen(feed: feed),
-                  ),
+        child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('Feeds')
+              .orderBy('createdDate', descending: true)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(
+                child: Text('Error loading feeds ${snapshot.error}'),
+              );
+            }
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const Center(
+                child: Text('No approved forum posts available yet.'),
+              );
+            }
+            final feeds = snapshot.data!.docs;
+            return ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 26.0),
+              itemCount: feeds.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 19),
+              itemBuilder: (context, idx) {
+                final doc = feeds[idx];
+                return _ForumCard(
+                  id: doc.id,
+                  title: (doc['title'] ?? '').toString(),
+                  desc: (doc['description'] ?? '').toString(),
+                  imageUrl: (doc['imageUrl'] ?? '').toString(),
+                  status: (doc['status'] ?? '').toString(),
+                  datetime: (doc['createdDate'] is Timestamp)
+                      ? (doc['createdDate'] as Timestamp).toDate()
+                      : DateTime.now(),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PostDetailsPage(feedId: doc.id),
+                      ),
+                    );
+                  },
                 );
               },
             );
@@ -57,238 +66,116 @@ class MainFeedScreen extends StatelessWidget {
   }
 }
 
-class FeedItem {
-  final String image;
+class _ForumCard extends StatelessWidget {
+  final String id;
   final String title;
-  final String description;
-  final String detail;
-  const FeedItem({
-    required this.image,
+  final String desc;
+  final String? imageUrl;
+  final String status;
+  final DateTime datetime;
+  final VoidCallback onTap;
+
+  const _ForumCard({
+    required this.id,
     required this.title,
-    required this.description,
-    required this.detail,
+    required this.desc,
+    required this.imageUrl,
+    required this.status,
+    required this.datetime,
+    required this.onTap,
   });
-}
-
-class _FeedPostCard extends StatelessWidget {
-  final FeedItem feed;
-  final VoidCallback? onTap;
-
-  const _FeedPostCard({
-    required this.feed,
-    this.onTap,
-  });
-
-  String getShortDescription(String desc, {int maxChars = 95}) {
-    if (desc.length <= maxChars) return desc;
-    int lastSpace = desc.substring(0, maxChars).lastIndexOf(' ');
-    if (lastSpace < 0) lastSpace = maxChars;
-    return desc.substring(0, lastSpace).trim() + '...';
-  }
 
   @override
   Widget build(BuildContext context) {
-    // Responsive width for shadow design
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 3.6),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(19),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 14,
-              offset: const Offset(0, 5),
-            ),
-          ],
-          border: Border.all(
-            color: const Color(0xFFE5EEE9),
-            width: 1,
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Image on top, with subtle overlay for visual depth
-            Stack(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  height: 200,
-                  child: Image.asset(
-                    feed.image,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: 55,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(19),
-                        bottomRight: Radius.circular(19),
-                      ),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.23),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            // Content area: title, description + arrow
-            Padding(
-              padding: const EdgeInsets.fromLTRB(17, 17, 17, 13),
-              child: Row(
+    // Colors used in admin FacebookPostCard
+    const Color greenDark = Color(0xFF205907);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      elevation: 6,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header - avatar, name, time
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Main text
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundImage: const AssetImage('assets/name.png'),
+                    child: Container(),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          feed.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 17.8,
+                          "Sustainable Living",
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 0.12,
-                            color: Color(0xff12933d), // deep eco green
-                            height: 1.13,
+                            color: greenDark,
+                            fontSize: 16,
                           ),
                         ),
-                        const SizedBox(height: 7),
                         Text(
-                          getShortDescription(feed.description),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 15,
-                            height: 1.32,
-                            color: Colors.grey.shade800,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.01,
+                          _formatDateTime(datetime),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black45,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 7),
-                  // trailing arrow
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: onTap,
-                      child: Container(
-                        margin: const EdgeInsets.only(top: 2),
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          color: const Color(0xffe9f6ee),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_forward_ios,
-                          color: Color(0xff12933d),
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // => NO 3-dot menu here!
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              // Title & description
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+              ),
+              if (desc.isNotEmpty) ...[
+                const SizedBox(height: 7),
+                Text(
+                  desc,
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+              if (imageUrl != null && imageUrl!.isNotEmpty) ...[
+                const SizedBox(height: 13),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(9),
+                  child: Image.network(
+                    imageUrl!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 170,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-class FeedDetailScreen extends StatelessWidget {
-  final FeedItem feed;
-  const FeedDetailScreen({Key? key, required this.feed}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    // Market-style, clean and modern detail page
-    return Scaffold(
-      backgroundColor: const Color(0xffF4F7FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        title: Text(
-          feed.title,
-          style: const TextStyle(
-            color: Color(0xff12933d),
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            letterSpacing: 0.1,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Color(0xff12933d)),
-        centerTitle: false,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
-              ),
-              child: Image.asset(
-                feed.image,
-                width: double.infinity,
-                height: 235,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    feed.title,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xff12933d),
-                      letterSpacing: 0.1,
-                    ),
-                  ),
-                  const SizedBox(height: 21),
-                  Text(
-                    feed.detail,
-                    style: const TextStyle(
-                      fontSize: 17.1,
-                      color: Color(0xff333d38),
-                      height: 1.61,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  static String _formatDateTime(DateTime dt) {
+    // Format: yyyy-MM-dd HH:mm
+    return "${dt.year.toString().padLeft(4, '0')}-"
+           "${dt.month.toString().padLeft(2, '0')}-"
+           "${dt.day.toString().padLeft(2, '0')} "
+           "${dt.hour.toString().padLeft(2, '0')}:"
+           "${dt.minute.toString().padLeft(2, '0')}";
   }
 }

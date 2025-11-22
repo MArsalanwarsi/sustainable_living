@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sustainable_living/Custom/admincustomwidget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class AdminUserManagementScreen extends StatefulWidget {
   const AdminUserManagementScreen({super.key});
