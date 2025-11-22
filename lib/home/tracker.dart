@@ -221,7 +221,7 @@ class _TrackerHomeState extends State<TrackerHome> {
                     color: Colors.green.shade600,
                     onTap: () {
                       // Navigate to eco products page
-                      // Navigator.pushNamed(context, '/eco-products');
+                      Navigator.pushReplacementNamed(context, '/Products');
                     },
                   ),
                 ),
@@ -235,8 +235,7 @@ class _TrackerHomeState extends State<TrackerHome> {
               icon: Icons.school,
               color: Colors.green.shade500,
               onTap: () {
-                // Navigate to learn more page
-                // Navigator.pushNamed(context, '/learn-more');
+            
               },
               isFullWidth: true,
             ),

@@ -17,6 +17,8 @@ class _HomePageState extends State<HomePage> {
   String? role;
   String? uid;
   String? profile;
+  DocumentSnapshot? tipDoc;
+  int greenpoint = 0;
 
   @override
   void initState() {
@@ -44,6 +46,37 @@ class _HomePageState extends State<HomePage> {
             name = data['name'];
             email = user?.email;
             profile = data['profile_image'];
+            // Get latest tip from Firebase Tips collection, ordered by 'created' (descending)
+            final tipsQuery = await FirebaseFirestore.instance
+                .collection('Tips')
+                .orderBy('created', descending: true)
+                .limit(1)
+                .get();
+
+            tipDoc = tipsQuery.docs.isNotEmpty ? tipsQuery.docs.first : null;
+            // Get the green points from the users/{uid}/carbon_calculations/{uid} document for this user
+            if (uid != null && uid!.isNotEmpty) {
+              final calculationDoc = await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(uid)
+                  .collection('carbon_calculations')
+                  .limit(1)
+                  .get();
+              if (calculationDoc.docs.isNotEmpty) {
+                final calculationData = calculationDoc.docs.first.data() as Map<String, dynamic>?;
+                if (calculationData != null && calculationData.containsKey('Green_Points')) {
+                  greenpoint = calculationData['Green_Points'] is int
+                      ? calculationData['Green_Points']
+                      : int.tryParse(calculationData['Green_Points']?.toString() ?? '0') ?? 0;
+                } else {
+                  greenpoint = 0;
+                }
+              } else {
+                greenpoint = 0;
+              }
+            } else {
+              greenpoint = 0;
+            }
             setState(() {});
           }
         }
@@ -61,6 +94,20 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    String ecoTip = "Fetching daily tip...";
+    if (tipDoc != null) {
+      final tipData = tipDoc!.data();
+      if (tipData is Map && tipData.containsKey('description')) {
+        // Ensure that tipData['description'] is a String or can be toString()-ed
+        ecoTip =
+            tipData['title']?.toString() ?? "No daily tip available.";
+      } else {
+        ecoTip = "No daily tip available.";
+      }
+    } else {
+      ecoTip = "No daily tip available.";
+    }
+
     return Scaffold(
       appBar: buildCustomAppBar(context),
       backgroundColor: const Color(0xFFE9F5EC),
@@ -95,17 +142,17 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
-                  children: const [
-                    Icon(
+                  children: [
+                    const Icon(
                       Icons.lightbulb_outline,
                       color: Colors.green,
                       size: 28,
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        "💡 Daily Eco Tip:\nUse reusable bags!",
-                        style: TextStyle(fontSize: 16),
+                        "💡 Daily Eco Tip:\n$ecoTip",
+                        style: const TextStyle(fontSize: 16),
                       ),
                     ),
                   ],
@@ -118,7 +165,7 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   buildStatBox("CO₂ Saved", "65%"),
-                  buildStatBox("Green Points", "350 pts"),
+                  buildStatBox("Green Points", "$greenpoint pts"),
                   buildStatBox("Challenges", "3/5"),
                 ],
               ),
@@ -128,10 +175,20 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  buildActionButton(Icons.eco, "Tracker"),
-                  buildActionButton(Icons.flag, "Challenges"),
-                  buildActionButton(Icons.shopping_bag, "Products"),
-                  buildActionButton(Icons.forum, "Forum"),
+                  buildActionButton(Icons.eco, "Tracker", "/tracker", context),
+                  buildActionButton(
+                    Icons.flag,
+                    "Challenges",
+                    "/Challenges",
+                    context,
+                  ),
+                  buildActionButton(
+                    Icons.shopping_bag,
+                    "Products",
+                    "/Products",
+                    context,
+                  ),
+                  buildActionButton(Icons.forum, "Forum", "/Form", context),
                 ],
               ),
               const SizedBox(height: 20),
@@ -207,15 +264,54 @@ class _HomePageState extends State<HomePage> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    // buildNewsCard(
-                    //   "Community Solar Initiatives",
-                    //   "assets/solar.jpg",
-                    // ),
-                    // buildNewsCard("Eco Coffee Cups", "assets/cup.jpg"),
-                    // buildNewsCard(
-                    //   "Green Transport Ideas",
-                    //   "assets/transport.jpg",
-                    // ),
+                    StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('Feeds')
+                          .orderBy('createdDate', descending: true)
+                          .limit(3)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Row(
+                            children: List.generate(
+                              3,
+                              (index) => Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: SizedBox(
+                                  width: 180,
+                                  height: 120,
+                                  child: Card(
+                                    color: Colors.grey[200],
+                                    child: const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        if (snapshot.hasError) {
+                          return const Text("Error loading news.");
+                        }
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Text("No news found.");
+                        }
+                        final feeds = snapshot.data!.docs;
+                        return Row(
+                          children: feeds.map<Widget>((doc) {
+                            final fullTitle = (doc['title'] ?? '').toString();
+                            final words = fullTitle.split(' ');
+                            final title = words.length > 3
+                                ? '${words.take(3).join(' ')}...'
+                                : fullTitle;
+                            final imageUrl = (doc['imageUrl'] ?? '');
+                            return buildNewsCard(title, imageUrl);
+                          }).toList(),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -269,27 +365,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget buildActionButton(IconData icon, String label) {
+  Widget buildActionButton(
+    IconData icon,
+    String label,
+    String routeName,
+    BuildContext context,
+  ) {
     return Expanded(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.green.shade100,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: Colors.green, size: 28),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.w600,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.of(context).pushNamed(routeName);
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.green.shade100,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: Colors.green, size: 28),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -315,7 +421,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: Image.asset(
+            child: Image.network(
               imagePath,
               height: 100,
               width: double.infinity,

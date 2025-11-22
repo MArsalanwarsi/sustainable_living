@@ -17,6 +17,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? role;
   String? uid;
   String? profile;
+  int greenpoint = 0;
 
   @override
   void initState() {
@@ -44,6 +45,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
             name = data['name'];
             email = user?.email;
             profile = data['profile_image'];
+            if (uid != null && uid!.isNotEmpty) {
+              final calculationDoc = await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(uid)
+                  .collection('carbon_calculations')
+                  .limit(1)
+                  .get();
+              if (calculationDoc.docs.isNotEmpty) {
+                final calculationData =
+                    calculationDoc.docs.first.data() as Map<String, dynamic>?;
+                if (calculationData != null &&
+                    calculationData.containsKey('Green_Points')) {
+                  greenpoint = calculationData['Green_Points'] is int
+                      ? calculationData['Green_Points']
+                      : int.tryParse(
+                              calculationData['Green_Points']?.toString() ??
+                                  '0',
+                            ) ??
+                            0;
+                } else {
+                  greenpoint = 0;
+                }
+              } else {
+                greenpoint = 0;
+              }
+            } else {
+              greenpoint = 0;
+            }
             setState(() {});
           }
         }
@@ -153,8 +182,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           width: 1,
                           color: Colors.grey.withValues(alpha: 0.4),
                         ),
-                        const Expanded(
-                          child: _StatItem(label: 'Green Points', value: '520'),
+                        Expanded(
+                          child: _StatItem(
+                            label: 'Green Points',
+                            value: '$greenpoint',
+                          ),
                         ),
                         Container(
                           height: 30,
